@@ -1,11 +1,11 @@
-# Add every real value in GitHub repository Settings → Secrets and variables → Actions.
-# Do not put actual values in this file, in Vercel, or in the hosted status page.
-MONITOR_ENABLED=true
+# Public monitor configuration committed by the setup form.
 SOURCE_URL=https://example.com/payment
 SITE_ADAPTER=direct-payment-page
-SOURCE_USERNAME=
-SOURCE_PASSWORD=
 PAYMENT_AMOUNT=
 PAYMENT_METHOD=KBZPay
+
+# These fields are never committed. They are sealed into GitHub Actions Secrets.
+SOURCE_USERNAME=
+SOURCE_PASSWORD=
 TELEGRAM_BOT_TOKEN=
 TELEGRAM_CHAT_ID=

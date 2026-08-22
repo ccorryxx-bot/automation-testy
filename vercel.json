@@ -2,4 +2,5 @@
   "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "pnpm build",
   "outputDirectory": "dist/public"
+  ,"functions": { "api/*.js": { "runtime": "nodejs24.x", "maxDuration": 30 } }
 }

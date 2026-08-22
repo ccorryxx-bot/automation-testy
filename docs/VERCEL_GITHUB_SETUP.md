@@ -1,24 +1,29 @@
-# GitHub Secrets and Vercel Hosting
+# Test-user deployment setup
 
-## GitHub Actions is the control plane
+This version is intentionally optimized to test the full setup → worker → Telegram flow with one test user.
 
-This project deliberately has no web dashboard that can write secrets, start jobs, stop jobs, or send test messages. Configure the worker in GitHub, where sensitive values are protected by repository Actions Secrets.
+## 1. Configure Vercel environment variables
 
-Open **GitHub repository → Settings → Secrets and variables → Actions** and add these secret names from `config.example.txt`:
+In **Vercel → automation-testy → Settings → Environment Variables**, add the following values for Production and Preview.
 
-| Secret | Purpose |
+| Variable | Required value |
 | --- | --- |
-| `MONITOR_ENABLED` | Set `true` to allow the worker to run |
-| `SOURCE_URL` | Read-only payment target URL or verified source endpoint |
-| `SITE_ADAPTER` | `direct-payment-page` or a future verified adapter ID |
-| `SOURCE_USERNAME` / `SOURCE_PASSWORD` | Optional source login credentials |
-| `PAYMENT_AMOUNT` / `PAYMENT_METHOD` | Optional adapter configuration |
-| `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` | Telegram notification destination |
+| `GITHUB_OWNER` | `ccorryxx-bot` |
+| `GITHUB_REPO` | `automation-testy` |
+| `GITHUB_TOKEN` | A fine-grained GitHub token restricted to this repository with Actions Secrets read/write, Actions workflow dispatch, and Contents read/write permissions |
 
-After saving secrets, open **Actions → Payment Number Monitor → Run workflow** once. GitHub then runs it every five minutes. Each run makes bounded read-only checks for up to 55 seconds and sends Telegram only when the normalized phone number changes.
+The token is a Vercel server-side secret. Do not enter it into the website form.
 
-## Vercel hosts only a static status page
+## 2. Use the public setup form
 
-The Vercel project requires no environment variables for the monitor. It builds the Vite site using `vercel.json`; the page reads the public, non-secret state file from GitHub. There are no Vercel API routes for credential entry, workflow dispatch, or secret management.
+Open the website, then enter the source URL, adapter, optional source credentials, payment settings, Telegram bot token, and Telegram chat ID. The form does **not** request a Vercel access key.
 
-> Because this is a public repository, the last detected phone number and worker event summaries in `state/monitor-state.json` are publicly readable. If that number must be private, use a private repository or replace the stored value with a non-reversible hash and do not display it.
+`Start monitoring` stores only public source settings in `config/monitor-config.json`. Source credentials, bot token, and chat ID are sealed via the GitHub Actions Secrets public-key API and never committed to the repository.
+
+## 3. Run the test
+
+Click **Test Telegram connection** first. Then click **Start monitoring**. The server dispatches the GitHub Actions workflow immediately; later it runs every five minutes. The worker checks the configured source read-only and sends a Telegram message only when the extracted phone number changes.
+
+## Public-product next step
+
+For many users, replace the single shared config file and shared GitHub Secrets with authenticated per-user jobs and an encrypted database. Do not expose this test controller publicly without user authentication and rate limiting.

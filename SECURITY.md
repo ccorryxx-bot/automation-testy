@@ -1,7 +1,13 @@
 # Security Policy
 
-This repository is public. Never commit Telegram bot tokens, source-site passwords, cookies, session values, GitHub tokens, Vercel tokens, or real private payment URLs.
+The project separates public monitor settings from sensitive user data.
 
-Secrets belong only in **GitHub Actions Secrets**. The Vercel deployment is static and contains no configuration API, no workflow dispatch endpoint, and no credential input fields.
+| Category | Examples | Storage |
+| --- | --- | --- |
+| Public configuration | Source URL, site adapter, amount, payment method | `config/monitor-config.json` |
+| Sensitive values | Source username/password, Telegram bot token, Telegram chat ID | GitHub Actions Secrets, sealed by the Vercel server before storage |
+| Service secret | `GITHUB_TOKEN` | Vercel Environment Variables only |
 
-Only `state/monitor-state.json` is committed by the worker. It contains non-secret monitoring state, but its last detected phone number and event summaries are publicly visible in this public repository. If that is not acceptable, use a private repository or store only a non-reversible hash.
+Never commit source passwords, Telegram tokens, Telegram chat IDs, GitHub tokens, Vercel tokens, cookies, or session data. The worker never submits a five-digit transfer or slip confirmation.
+
+This release is a **test-user controller**. Before general public availability, add real user authentication, per-user data isolation, rate limits, and per-user encrypted secret storage.

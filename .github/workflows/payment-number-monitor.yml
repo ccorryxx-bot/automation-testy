@@ -18,12 +18,8 @@ jobs:
     timeout-minutes: 1
     env:
       MONITOR_ENABLED: ${{ secrets.MONITOR_ENABLED }}
-      SOURCE_URL: ${{ secrets.SOURCE_URL }}
-      SITE_ADAPTER: ${{ secrets.SITE_ADAPTER }}
       SOURCE_USERNAME: ${{ secrets.SOURCE_USERNAME }}
       SOURCE_PASSWORD: ${{ secrets.SOURCE_PASSWORD }}
-      PAYMENT_AMOUNT: ${{ secrets.PAYMENT_AMOUNT }}
-      PAYMENT_METHOD: ${{ secrets.PAYMENT_METHOD }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       CHECK_WINDOW_SECONDS: "55"

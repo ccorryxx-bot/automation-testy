@@ -1,18 +1,23 @@
 # Automation Testy
 
-Automation Testy is a Vercel-hosted, read-only status interface for a GitHub Actions payment phone-number monitor. The website contains no control plane and accepts no credentials. GitHub Actions Secrets own the confidential configuration, GitHub Actions owns execution, and the repository holds only non-secret worker state.
+Automation Testy is a test-user monitoring dashboard. A user enters public source settings and any required credentials in the website form, starts the monitor, and receives Telegram notification only when the phone number changes.
 
-## Security model
+## Test flow
 
-| Location | What belongs there |
-| --- | --- |
-| GitHub Actions Secrets | Source URL, site adapter, source credentials, amount/method settings, Telegram bot token, Telegram chat ID, and `MONITOR_ENABLED` |
-| GitHub Actions workflow | Bounded read-only monitoring and Telegram notification on a number change |
-| Repository `state/monitor-state.json` | Last detected phone number, timestamps, and non-secret event summaries |
-| Vercel | Static read-only status page only; no secret configuration or write API |
-
-## Setup
-
-Open [GitHub Actions Secrets](https://github.com/ccorryxx-bot/automation-testy/settings/secrets/actions) and add values using the names listed in [`config.example.txt`](./config.example.txt). Then use the [Payment Number Monitor workflow](https://github.com/ccorryxx-bot/automation-testy/actions/workflows/payment-number-monitor.yml) to run manually once or wait for the five-minute schedule.
+1. Enter a **public source URL**, adapter, and public payment settings in the form.
+2. Enter optional source login credentials and Telegram delivery values.
+3. Click **Test Telegram connection** or **Start monitoring**.
+4. The Vercel server seals sensitive values into GitHub Actions Secrets and writes only public source settings to `config/monitor-config.json`.
+5. GitHub Actions runs the bounded, read-only checker and commits non-secret state to `state/monitor-state.json`.
 
 The worker never submits a five-digit transfer or slip confirmation.
+
+## Required Vercel environment variables
+
+| Variable | Purpose |
+| --- | --- |
+| `GITHUB_OWNER` | GitHub repository owner, for example `ccorryxx-bot` |
+| `GITHUB_REPO` | Repository name, `automation-testy` |
+| `GITHUB_TOKEN` | Fine-grained GitHub token with Actions Secrets read/write, Actions workflow dispatch, and repository contents read/write access |
+
+`GITHUB_TOKEN` stays only in Vercel Environment Variables. The form never asks a user to enter it.

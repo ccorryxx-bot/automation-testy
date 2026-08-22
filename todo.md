@@ -20,3 +20,14 @@
 - [x] Update worker configuration and documentation for GitHub Secrets-only operation.
 - [x] Inspect Vercel deployment health and required environment configuration without exposing secret values.
 - [x] Re-test, secret-scan, push the no-control-dashboard update, and verify the deployed health status.
+- [x] Restore public setup fields for source URL, adapter, optional login credentials, Telegram bot token, and Telegram chat ID without a dashboard access-key field.
+- [x] Persist test-user public monitor configuration separately from sealed sensitive values.
+- [ ] Deferred: Add authenticated user session boundaries and per-user encrypted credential storage for the multi-user release.
+- [ ] Deferred: Store per-user monitor jobs and secret references in a scale-ready data model.
+- [x] Update worker dispatch to consume the configured single test-user monitor configuration without exposing credentials in client code or the public repository.
+- [ ] Test the deployed setup save and Telegram delivery after the user adds the required Vercel GitHub environment variables.
+- [x] Superseded: Decide and document the `/admin` password/session authentication model and required Vercel environment variables.
+- [x] Superseded: Restore the monitoring setup form and Start, Stop, Test Telegram controls on a protected `/admin` route only.
+- [x] Superseded: Restore protected server-side GitHub Secrets and workflow dispatch APIs without exposing service tokens in the browser.
+- [x] Superseded: Keep `/` as a public, read-only status page with no secret fields or control actions.
+- [x] Superseded: Test admin authentication and protected API rejection paths, then deploy and verify the updated Vercel project.

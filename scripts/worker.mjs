@@ -6,19 +6,22 @@ import { getAdapter } from "./adapters/index.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const STATE_PATH = resolve(ROOT, "state/monitor-state.json");
+const CONFIG_PATH = resolve(ROOT, "config/monitor-config.json");
 const EVENT_LIMIT = 30;
 const RUN_WINDOW_MS = Math.min(Math.max(Number(process.env.CHECK_WINDOW_SECONDS ?? "55") * 1000, 10_000), 55_000);
 const CHECK_INTERVAL_MS = Math.min(Math.max(Number(process.env.CHECK_INTERVAL_SECONDS ?? "10") * 1000, 5_000), 25_000);
 
-function getConfig() {
+async function getConfig() {
+  let publicConfig = {};
+  try { publicConfig = JSON.parse(await readFile(CONFIG_PATH, "utf8")); } catch { /* The form has not configured a public source yet. */ }
   return {
     enabled: process.env.MONITOR_ENABLED === "true",
-    sourceUrl: process.env.SOURCE_URL ?? "",
-    siteAdapter: process.env.SITE_ADAPTER ?? "direct-payment-page",
+    sourceUrl: publicConfig.sourceUrl ?? "",
+    siteAdapter: publicConfig.siteAdapter ?? "direct-payment-page",
     sourceUsername: process.env.SOURCE_USERNAME ?? "",
     sourcePassword: process.env.SOURCE_PASSWORD ?? "",
-    paymentAmount: process.env.PAYMENT_AMOUNT ?? "",
-    paymentMethod: process.env.PAYMENT_METHOD ?? "",
+    paymentAmount: publicConfig.paymentAmount ?? "",
+    paymentMethod: publicConfig.paymentMethod ?? "",
     telegramBotToken: process.env.TELEGRAM_BOT_TOKEN ?? "",
     telegramChatId: process.env.TELEGRAM_CHAT_ID ?? "",
   };
@@ -95,10 +98,10 @@ function sleep(milliseconds) {
 }
 
 async function run() {
-  const config = getConfig();
+  const config = await getConfig();
   const state = await loadState();
   if (!config.enabled) return console.log("Monitoring is disabled. Nothing to do.");
-  if (!config.sourceUrl) throw new Error("SOURCE_URL is missing from GitHub Secrets.");
+  if (!config.sourceUrl) throw new Error("Public source configuration is missing. Save the setup form first.");
 
   const deadline = Date.now() + RUN_WINDOW_MS;
   let attempts = 0;
