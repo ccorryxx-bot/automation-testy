@@ -1,0 +1,16 @@
+# Project TODO
+
+- [x] Build a Vercel-ready monitoring dashboard with a calm Scandinavian visual system.
+- [x] Add one-time setup fields for source URL, site adapter, optional source login, Telegram bot token, and Telegram chat ID.
+- [x] Add Start, Stop, and Test Telegram controls with clear monitoring status feedback.
+- [x] Display the last detected phone number and recent activity/error logs.
+- [x] Implement a reusable worker core that extracts, normalizes, compares, and de-duplicates Myanmar phone numbers.
+- [x] Add direct-payment-page and MMK1053 placeholder site adapters behind a shared interface.
+- [x] Ensure the worker never submits a five-digit transfer or slip confirmation.
+- [x] Persist only non-secret state in a repository state file.
+- [x] Add a GitHub Actions workflow for five-minute schedule and manual dispatch with bounded one-minute checks per run.
+- [x] Add public-repository safety files, redacted example configuration, and secrets guidance.
+- [x] Add Vercel and GitHub connection documentation.
+- [x] Add automated tests for worker parsing, normalization, and de-duplication behavior.
+- [x] Verify type checking, tests, build output, visual layout, and absence of exposed credentials.
+- [ ] Create the public GitHub repository automation-testy and push the completed code.

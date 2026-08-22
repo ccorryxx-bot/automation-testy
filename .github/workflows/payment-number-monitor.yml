@@ -1,0 +1,44 @@
+name: Payment Number Monitor
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: payment-number-monitor
+  cancel-in-progress: false
+
+jobs:
+  check-payment-target:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    env:
+      MONITOR_ENABLED: ${{ secrets.MONITOR_ENABLED }}
+      SOURCE_URL: ${{ secrets.SOURCE_URL }}
+      SITE_ADAPTER: ${{ secrets.SITE_ADAPTER }}
+      SOURCE_USERNAME: ${{ secrets.SOURCE_USERNAME }}
+      SOURCE_PASSWORD: ${{ secrets.SOURCE_PASSWORD }}
+      PAYMENT_AMOUNT: ${{ secrets.PAYMENT_AMOUNT }}
+      PAYMENT_METHOD: ${{ secrets.PAYMENT_METHOD }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      CHECK_WINDOW_SECONDS: "55"
+      CHECK_INTERVAL_SECONDS: "10"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run bounded payment-number check
+        run: node scripts/worker.mjs
+      - name: Commit non-secret monitor state
+        run: |
+          git config user.name "automation-testy[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state/monitor-state.json
+          git diff --cached --quiet || git commit -m "chore: update monitor state"
+          git push

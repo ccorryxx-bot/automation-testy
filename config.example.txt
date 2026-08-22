@@ -1,0 +1,16 @@
+# Copy these names into GitHub Actions Secrets. Never place real values in this repository.
+MONITOR_ENABLED=false
+SOURCE_URL=https://example.com/payment
+SITE_ADAPTER=direct-payment-page
+SOURCE_USERNAME=
+SOURCE_PASSWORD=
+PAYMENT_AMOUNT=
+PAYMENT_METHOD=KBZPay
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
+
+# Add these three values only in Vercel Environment Variables.
+GITHUB_OWNER=your-github-user
+GITHUB_REPO=automation-testy
+GITHUB_TOKEN=github-fine-grained-token-with-actions-secrets-and-workflow-write
+DASHBOARD_ACCESS_KEY=create-a-long-random-access-key
