@@ -26,6 +26,8 @@
 - [ ] Deferred: Store per-user monitor jobs and secret references in a scale-ready data model.
 - [x] Update worker dispatch to consume the configured single test-user monitor configuration without exposing credentials in client code or the public repository.
 - [ ] Test the deployed setup save and Telegram delivery after the user adds the required Vercel GitHub environment variables.
+- [ ] Push the latest restored setup dashboard to GitHub main and verify the updated Vercel production deployment.
+- [ ] Push the latest restored setup dashboard to GitHub main and verify the updated Vercel production deployment.
 - [x] Superseded: Decide and document the `/admin` password/session authentication model and required Vercel environment variables.
 - [x] Superseded: Restore the monitoring setup form and Start, Stop, Test Telegram controls on a protected `/admin` route only.
 - [x] Superseded: Restore protected server-side GitHub Secrets and workflow dispatch APIs without exposing service tokens in the browser.
