@@ -1,7 +1,7 @@
 # Security Policy
 
-This repository is intentionally public. Never commit Telegram bot tokens, source-site passwords, cookies, session values, GitHub tokens, Vercel tokens, dashboard access keys, or real payment URLs containing private order data.
+This repository is public. Never commit Telegram bot tokens, source-site passwords, cookies, session values, GitHub tokens, Vercel tokens, or real private payment URLs.
 
-The dashboard sends sensitive setup values only to Vercel serverless API routes. Those routes encrypt and write values to GitHub Actions Secrets. The scheduled worker reads credentials from GitHub Secrets and commits only non-secret monitoring state to `state/monitor-state.json`.
+Secrets belong only in **GitHub Actions Secrets**. The Vercel deployment is static and contains no configuration API, no workflow dispatch endpoint, and no credential input fields.
 
-If a credential is committed accidentally, revoke or rotate it immediately and remove it from Git history before continuing.
+Only `state/monitor-state.json` is committed by the worker. It contains non-secret monitoring state, but its last detected phone number and event summaries are publicly visible in this public repository. If that is not acceptable, use a private repository or store only a non-reversible hash.

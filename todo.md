@@ -14,3 +14,9 @@
 - [x] Add automated tests for worker parsing, normalization, and de-duplication behavior.
 - [x] Verify type checking, tests, build output, visual layout, and absence of exposed credentials.
 - [x] Create the public GitHub repository automation-testy and push the completed code.
+- [x] Remove dashboard access-key, credential input fields, and remote control actions from the public website.
+- [x] Replace control UI with a secret-free monitoring status and setup guidance view.
+- [x] Remove Vercel API routes that write GitHub Secrets or dispatch workflows from the public dashboard.
+- [x] Update worker configuration and documentation for GitHub Secrets-only operation.
+- [x] Inspect Vercel deployment health and required environment configuration without exposing secret values.
+- [ ] Re-test, secret-scan, push the no-control-dashboard update, and verify the deployed health status.
