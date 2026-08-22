@@ -26,10 +26,18 @@
 - [ ] Deferred: Store per-user monitor jobs and secret references in a scale-ready data model.
 - [x] Update worker dispatch to consume the configured single test-user monitor configuration without exposing credentials in client code or the public repository.
 - [ ] Test the deployed setup save and Telegram delivery after the user adds the required Vercel GitHub environment variables.
-- [ ] Push the latest restored setup dashboard to GitHub main and verify the updated Vercel production deployment.
-- [ ] Push the latest restored setup dashboard to GitHub main and verify the updated Vercel production deployment.
+- [x] Push the latest restored setup dashboard to GitHub main and verify the updated Vercel production deployment.
+- [x] Push the latest restored setup dashboard to GitHub main and verify the updated Vercel production deployment.
 - [x] Superseded: Decide and document the `/admin` password/session authentication model and required Vercel environment variables.
 - [x] Superseded: Restore the monitoring setup form and Start, Stop, Test Telegram controls on a protected `/admin` route only.
 - [x] Superseded: Restore protected server-side GitHub Secrets and workflow dispatch APIs without exposing service tokens in the browser.
 - [x] Superseded: Keep `/` as a public, read-only status page with no secret fields or control actions.
 - [x] Superseded: Test admin authentication and protected API rejection paths, then deploy and verify the updated Vercel project.
+- [x] Obtain explicit user confirmation before replacing direct-payment-page polling with MMK1053 main-source payment-target discovery.
+- [x] Close the MMK1053 browser-inspection task with captured encrypted-login evidence: source-side Geetest CAPTCHA blocks session creation, and no deposit/payment/slip confirmation was submitted.
+- [x] Define and document a reusable source-adapter contract for authentication, payment-target discovery, phone extraction, error classification, and explicit read-only safety boundaries.
+- [x] Refactor the worker to run one configured source adapter per scheduled cycle, with adapter-specific cadence and no hardcoded source-site logic in the worker core.
+- [x] Make setup validation adapter-driven so each future source declares its own required public fields and sealed credential fields.
+- [x] Add fixtures and unit tests for generic adapter status handling, change detection, unsupported-source behavior, and MMK1053 evidence-backed responses.
+- [x] Restrict the user setup form to source URL, optional source credentials, Telegram bot token, and Telegram chat ID; remove technical adapter, amount, method, cadence, and target-request fields.
+- [x] Move source identification, authentication strategy, payment-target discovery, safe defaults, and parsing rules behind the background adapter engine rather than requesting technical values from users.

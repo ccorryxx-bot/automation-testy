@@ -2,26 +2,22 @@ import { readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { extractMyanmarPhones, hasPhoneChanged } from "../shared/phone.js";
-import { getAdapter } from "./adapters/index.mjs";
+import { AdapterOutcome } from "./adapters/contracts.mjs";
+import { resolveAdapter } from "./adapters/index.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const STATE_PATH = resolve(ROOT, "state/monitor-state.json");
 const CONFIG_PATH = resolve(ROOT, "config/monitor-config.json");
 const EVENT_LIMIT = 30;
-const RUN_WINDOW_MS = Math.min(Math.max(Number(process.env.CHECK_WINDOW_SECONDS ?? "55") * 1000, 10_000), 55_000);
-const CHECK_INTERVAL_MS = Math.min(Math.max(Number(process.env.CHECK_INTERVAL_SECONDS ?? "10") * 1000, 5_000), 25_000);
 
-async function getConfig() {
+export async function getConfig() {
   let publicConfig = {};
-  try { publicConfig = JSON.parse(await readFile(CONFIG_PATH, "utf8")); } catch { /* The form has not configured a public source yet. */ }
+  try { publicConfig = JSON.parse(await readFile(CONFIG_PATH, "utf8")); } catch { /* Setup is not complete yet. */ }
   return {
     enabled: process.env.MONITOR_ENABLED === "true",
     sourceUrl: publicConfig.sourceUrl ?? "",
-    siteAdapter: publicConfig.siteAdapter ?? "direct-payment-page",
     sourceUsername: process.env.SOURCE_USERNAME ?? "",
     sourcePassword: process.env.SOURCE_PASSWORD ?? "",
-    paymentAmount: publicConfig.paymentAmount ?? "",
-    paymentMethod: publicConfig.paymentMethod ?? "",
     telegramBotToken: process.env.TELEGRAM_BOT_TOKEN ?? "",
     telegramChatId: process.env.TELEGRAM_CHAT_ID ?? "",
   };
@@ -29,7 +25,7 @@ async function getConfig() {
 
 async function loadState() {
   try { return JSON.parse(await readFile(STATE_PATH, "utf8")); }
-  catch { return { lastPhoneNumber: null, lastCheckedAt: null, lastNotifiedAt: null, lastStatus: "idle", events: [] }; }
+  catch { return { lastPhoneNumber: null, lastCheckedAt: null, lastNotifiedAt: null, lastStatus: "idle", source: null, events: [] }; }
 }
 
 async function saveState(state) {
@@ -38,6 +34,25 @@ async function saveState(state) {
 
 function addEvent(state, status, detail) {
   state.events = [{ at: new Date().toISOString(), status, detail }, ...(Array.isArray(state.events) ? state.events : [])].slice(0, EVENT_LIMIT);
+}
+
+export function extractResultPhones(result) {
+  return [...new Set([...(result.phoneNumbers ?? []), ...extractMyanmarPhones(result.body ?? "")])];
+}
+
+export function classifyAdapterResult(result) {
+  switch (result.outcome) {
+    case AdapterOutcome.BLOCKED:
+      return { stateStatus: "blocked", eventStatus: "blocked", detail: result.detail || "The source needs a human verification step." };
+    case AdapterOutcome.UNSUPPORTED:
+      return { stateStatus: "unsupported", eventStatus: "unsupported", detail: result.detail || "This source is awaiting automatic discovery support." };
+    case AdapterOutcome.EXPIRED:
+      return { stateStatus: "expired", eventStatus: "expired", detail: result.detail || "The source target has expired." };
+    case AdapterOutcome.ERROR:
+      return { stateStatus: "error", eventStatus: "error", detail: result.detail || "The source request failed." };
+    default:
+      return null;
+  }
 }
 
 async function sendTelegram(config, phoneNumber) {
@@ -51,77 +66,66 @@ async function sendTelegram(config, phoneNumber) {
   if (!response.ok) throw new Error(`Telegram request failed with HTTP ${response.status}.`);
 }
 
-async function checkOnce(config, state) {
+export async function checkOnce(config, state, dependencies = {}) {
+  const adapter = dependencies.resolveAdapter?.(config.sourceUrl) ?? resolveAdapter(config.sourceUrl);
+  const save = dependencies.saveState ?? saveState;
+  const notify = dependencies.sendTelegram ?? sendTelegram;
   try {
-    const target = await getAdapter(config.siteAdapter).fetchTarget(config);
+    const result = await adapter.monitor(config);
     state.lastCheckedAt = new Date().toISOString();
-    if (target.expired) {
-      state.lastStatus = "expired";
-      addEvent(state, "expired", "The payment target reported an expired order. No slip confirmation was submitted.");
-      await saveState(state);
-      console.log("Payment target is expired.");
-      return { stop: true, healthy: false };
+    state.source = { id: adapter.id, label: adapter.label, sourceUrl: config.sourceUrl };
+
+    const classification = classifyAdapterResult(result);
+    if (classification) {
+      state.lastStatus = classification.stateStatus;
+      addEvent(state, classification.eventStatus, classification.detail);
+      await save(state);
+      console.log(classification.detail);
+      return { healthy: false, blocked: classification.stateStatus === "blocked", outcome: result.outcome };
     }
 
-    const [phoneNumber] = extractMyanmarPhones(target.body);
+    const [phoneNumber] = extractResultPhones(result);
     if (!phoneNumber) {
-      state.lastStatus = "parse_failed";
-      addEvent(state, "parse_failed", `No Myanmar phone number found (HTTP ${target.statusCode}).`);
-      await saveState(state);
-      console.log("No phone number found.");
-      return { stop: false, healthy: false };
+      const isDiscoveryPending = adapter.isFallback === true;
+      state.lastStatus = isDiscoveryPending ? "unsupported" : "parse_failed";
+      addEvent(state, isDiscoveryPending ? "unsupported" : "parse_failed", isDiscoveryPending ? "Automatic source discovery did not find a usable recipient number yet. This source will need a background adapter; no technical information is required from you." : "Automatic source check completed, but no Myanmar phone number was found.");
+      await save(state);
+      console.log(isDiscoveryPending ? "Automatic source discovery is pending." : "No Myanmar phone number found.");
+      return { healthy: false, outcome: isDiscoveryPending ? AdapterOutcome.UNSUPPORTED : "parse_failed" };
     }
 
     const previous = state.lastPhoneNumber;
+    const changed = hasPhoneChanged(previous, phoneNumber);
     state.lastPhoneNumber = phoneNumber;
     state.lastStatus = "healthy";
-    addEvent(state, hasPhoneChanged(previous, phoneNumber) ? "changed" : "unchanged", `Detected ${phoneNumber}.`);
-    if (hasPhoneChanged(previous, phoneNumber)) {
-      await sendTelegram(config, phoneNumber);
+    addEvent(state, changed ? "changed" : previous ? "unchanged" : "baseline", changed ? `Detected changed number ${phoneNumber}.` : previous ? `Number remains ${phoneNumber}.` : `Baseline number detected: ${phoneNumber}.`);
+    if (changed) {
+      await notify(config, phoneNumber);
       state.lastNotifiedAt = new Date().toISOString();
       console.log(`Phone number changed: ${previous} -> ${phoneNumber}`);
-    } else console.log(`Phone number unchanged: ${phoneNumber}`);
-    await saveState(state);
-    return { stop: false, healthy: true };
+    } else console.log(`Phone number unchanged or baseline: ${phoneNumber}`);
+    await save(state);
+    return { healthy: true, changed, outcome: AdapterOutcome.FOUND };
   } catch (error) {
     state.lastCheckedAt = new Date().toISOString();
     state.lastStatus = "error";
-    addEvent(state, "error", error instanceof Error ? error.message : "Unknown worker error.");
-    await saveState(state);
+    addEvent(state, "error", "The background source check could not complete. It will retry on the next scheduled cycle.");
+    await save(state);
     console.error(error);
-    return { stop: false, healthy: false, error };
+    return { healthy: false, outcome: AdapterOutcome.ERROR, error };
   }
 }
 
-function sleep(milliseconds) {
-  return new Promise(resolvePromise => setTimeout(resolvePromise, milliseconds));
-}
-
-async function run() {
+export async function run() {
   const config = await getConfig();
   const state = await loadState();
   if (!config.enabled) return console.log("Monitoring is disabled. Nothing to do.");
   if (!config.sourceUrl) throw new Error("Public source configuration is missing. Save the setup form first.");
-
-  const deadline = Date.now() + RUN_WINDOW_MS;
-  let attempts = 0;
-  let healthyCheckCompleted = false;
-  let latestError = null;
-
-  while (Date.now() < deadline) {
-    const result = await checkOnce(config, state);
-    attempts += 1;
-    healthyCheckCompleted ||= result.healthy;
-    latestError = result.error ?? latestError;
-    if (result.stop) break;
-
-    const remaining = deadline - Date.now();
-    if (remaining <= 0) break;
-    await sleep(Math.min(CHECK_INTERVAL_MS, remaining));
-  }
-
-  console.log(`Bounded run completed after ${attempts} read-only check(s).`);
-  if (!healthyCheckCompleted && latestError) throw latestError;
+  const result = await checkOnce(config, state);
+  console.log(`Scheduled source-aware check completed (${result.outcome}).`);
+  if (result.error) throw result.error;
 }
 
-run().catch(error => { console.error(error); process.exitCode = 1; });
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  run().catch(error => { console.error(error); process.exitCode = 1; });
+}

@@ -1,7 +1,5 @@
 {
   "sourceUrl": "",
-  "siteAdapter": "direct-payment-page",
-  "paymentAmount": "",
-  "paymentMethod": "KBZPay",
+  "sourceId": "",
   "updatedAt": null
 }

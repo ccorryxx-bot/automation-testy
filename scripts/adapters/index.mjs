@@ -1,10 +1,12 @@
 import { directPaymentPageAdapter } from "./direct-payment-page.mjs";
 import { mmk1053Adapter } from "./mmk1053.mjs";
 
-const adapters = new Map([
-  [directPaymentPageAdapter.id, directPaymentPageAdapter],
-  [mmk1053Adapter.id, mmk1053Adapter],
-]);
+const knownAdapters = [mmk1053Adapter];
+const adapters = new Map([...knownAdapters, directPaymentPageAdapter].map(adapter => [adapter.id, adapter]));
+
+export function resolveAdapter(sourceUrl) {
+  return knownAdapters.find(adapter => adapter.matchesSource(sourceUrl)) ?? directPaymentPageAdapter;
+}
 
 export function getAdapter(adapterId) {
   const adapter = adapters.get(adapterId);
@@ -12,6 +14,7 @@ export function getAdapter(adapterId) {
   return adapter;
 }
 
-export function listAdapters() {
-  return [...adapters.values()].map(({ id, label }) => ({ id, label }));
+export function describeSource(sourceUrl) {
+  const adapter = resolveAdapter(sourceUrl);
+  return { id: adapter.id, label: adapter.label, automatic: true };
 }

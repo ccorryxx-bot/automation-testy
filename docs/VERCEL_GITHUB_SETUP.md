@@ -1,6 +1,6 @@
 # Test-user deployment setup
 
-This version is intentionally optimized to test the full setup → worker → Telegram flow with one test user.
+This version is intentionally optimized to test one complete setup → background monitoring → Telegram flow. The user-facing form asks only for information the user already has; source-specific technical behavior is handled in the background.
 
 ## 1. Configure Vercel environment variables
 
@@ -14,15 +14,25 @@ In **Vercel → automation-testy → Settings → Environment Variables**, add t
 
 The token is a Vercel server-side secret. Do not enter it into the website form.
 
-## 2. Use the public setup form
+## 2. Use the setup form
 
-Open the website, then enter the source URL, adapter, optional source credentials, payment settings, Telegram bot token, and Telegram chat ID. The form does **not** request a Vercel access key.
+Open the website and enter only:
 
-`Start monitoring` stores only public source settings in `config/monitor-config.json`. Source credentials, bot token, and chat ID are sealed via the GitHub Actions Secrets public-key API and never committed to the repository.
+| Field | When to provide it |
+| --- | --- |
+| Source URL | Always |
+| Source account and password | Only when the source requires a login |
+| Telegram bot token and chat ID | Always, for alerts |
+
+The form does **not** request a Vercel access key, adapter name, payment amount, payment method, channel code, request path, parsing rule, or polling setting. The background resolver identifies supported source URLs and selects the matching adapter automatically.
+
+`Start monitoring` stores only the source URL and resolved source identifier in `config/monitor-config.json`. Account credentials, bot token, and chat ID are sealed through the GitHub Actions Secrets public-key API and never committed to the repository.
 
 ## 3. Run the test
 
-Click **Test Telegram connection** first. Then click **Start monitoring**. The server dispatches the GitHub Actions workflow immediately; later it runs every five minutes. The worker checks the configured source read-only and sends a Telegram message only when the extracted phone number changes.
+Click **Test Telegram connection** first. Then click **Start monitoring**. The server dispatches the GitHub Actions workflow immediately; later it runs every five minutes. Each run makes one fresh, read-only source check, records a baseline on the first successful number, and sends Telegram only when a later number changes.
+
+The dashboard shows source status and recent activity. A CAPTCHA, unavailable session, or unsupported source is shown as a clear background status rather than requiring the user to supply technical fields. No source adapter may submit a transfer, payment proof, five-digit slip/reference, or payment confirmation.
 
 ## Public-product next step
 
