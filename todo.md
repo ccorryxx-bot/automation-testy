@@ -19,4 +19,4 @@
 - [x] Remove Vercel API routes that write GitHub Secrets or dispatch workflows from the public dashboard.
 - [x] Update worker configuration and documentation for GitHub Secrets-only operation.
 - [x] Inspect Vercel deployment health and required environment configuration without exposing secret values.
-- [ ] Re-test, secret-scan, push the no-control-dashboard update, and verify the deployed health status.
+- [x] Re-test, secret-scan, push the no-control-dashboard update, and verify the deployed health status.
