@@ -1,7 +1,18 @@
 {
   "lastPhoneNumber": null,
-  "lastCheckedAt": null,
+  "lastCheckedAt": "2026-08-22T20:16:25.001Z",
   "lastNotifiedAt": null,
-  "lastStatus": "idle",
-  "events": []
+  "lastStatus": "blocked",
+  "events": [
+    {
+      "at": "2026-08-22T20:16:25.001Z",
+      "status": "blocked",
+      "detail": "MMK1053 source is recognized, but its verified encrypted login currently requires a Geetest CAPTCHA before a session can be created. No deposit, transfer, or slip confirmation was attempted."
+    }
+  ],
+  "source": {
+    "id": "mmk1053",
+    "label": "MMK1053 main source",
+    "sourceUrl": "http://www.mmk1053.com/?r=mbt5717"
+  }
 }
