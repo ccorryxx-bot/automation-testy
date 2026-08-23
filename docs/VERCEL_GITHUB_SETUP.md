@@ -22,11 +22,13 @@ Open the website and enter only:
 | --- | --- |
 | Source URL | Always |
 | Source account and password | Only when the source requires a login |
-| Telegram bot token and chat ID | Always, for alerts |
+| Telegram bot token and Telegram User ID | Always, for alerts |
 
 The form does **not** request a Vercel access key, adapter name, payment amount, payment method, channel code, request path, parsing rule, or polling setting. The background resolver identifies supported source URLs and selects the matching adapter automatically.
 
-`Start monitoring` stores only the source URL and resolved source identifier in `config/monitor-config.json`. Account credentials, bot token, and chat ID are sealed through the GitHub Actions Secrets public-key API and never committed to the repository.
+Get the numeric **Telegram User ID** from UserInfoBot. For a private alert destination, the monitor maps that User ID internally to Telegram's `chat_id` request parameter; users do not need to find or enter a separate technical chat identifier.
+
+`Start monitoring` stores only the source URL and resolved source identifier in `config/monitor-config.json`. Account credentials, bot token, and Telegram User ID are sealed through the GitHub Actions Secrets public-key API and never committed to the repository.
 
 ## 3. Run the test
 

@@ -1,19 +1,21 @@
 import { describeSource } from "../scripts/adapters/index.mjs";
 import { dispatchWorker, putActionSecret, putPublicMonitorConfig } from "./_github.js";
 
-const secretNames = { sourceUsername: "SOURCE_USERNAME", sourcePassword: "SOURCE_PASSWORD", telegramBotToken: "TELEGRAM_BOT_TOKEN", telegramChatId: "TELEGRAM_CHAT_ID" };
+const secretNames = { sourceUsername: "SOURCE_USERNAME", sourcePassword: "SOURCE_PASSWORD", telegramBotToken: "TELEGRAM_BOT_TOKEN", telegramUserId: "TELEGRAM_CHAT_ID" };
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed." });
   try {
     const body = req.body ?? {};
-    if (!body.sourceUrl || !body.telegramBotToken || !body.telegramChatId) return res.status(400).json({ error: "Source URL, Telegram bot token, and chat ID are required." });
+    const telegramUserId = body.telegramUserId ?? body.telegramChatId;
+    if (!body.sourceUrl || !body.telegramBotToken || !telegramUserId) return res.status(400).json({ error: "Source URL, Telegram bot token, and Telegram User ID are required." });
     let source;
     try { source = describeSource(body.sourceUrl); } catch { return res.status(400).json({ error: "Enter a valid source URL." }); }
+    const secretValues = { ...body, telegramUserId };
     await Promise.all([
       putPublicMonitorConfig({ sourceUrl: body.sourceUrl, sourceId: source.id, updatedAt: new Date().toISOString() }),
       putActionSecret("MONITOR_ENABLED", "true"),
-      ...Object.entries(secretNames).map(([field, name]) => putActionSecret(name, body[field] ?? "")),
+      ...Object.entries(secretNames).map(([field, name]) => putActionSecret(name, secretValues[field] ?? "")),
     ]);
     await dispatchWorker();
     return res.status(200).json({ ok: true, source });

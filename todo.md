@@ -41,3 +41,6 @@
 - [x] Add fixtures and unit tests for generic adapter status handling, change detection, unsupported-source behavior, and MMK1053 evidence-backed responses.
 - [x] Restrict the user setup form to source URL, optional source credentials, Telegram bot token, and Telegram chat ID; remove technical adapter, amount, method, cadence, and target-request fields.
 - [x] Move source identification, authentication strategy, payment-target discovery, safe defaults, and parsing rules behind the background adapter engine rather than requesting technical values from users.
+- [x] Inspect the user-triggered production setup save, GitHub Actions workflow run, and worker state without exposing secret values.
+- [x] Replace user-facing Telegram Chat ID wording with Telegram User ID while retaining the internal Bot API chat_id mapping.
+- [ ] Re-verify the deployed user-minimal setup flow after the Telegram User ID wording update.
