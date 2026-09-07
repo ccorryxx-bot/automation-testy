@@ -1,9 +1,14 @@
 {
   "lastPhoneNumber": null,
-  "lastCheckedAt": "2026-09-07T20:49:17.993Z",
+  "lastCheckedAt": "2026-09-07T23:01:50.057Z",
   "lastNotifiedAt": null,
   "lastStatus": "blocked",
   "events": [
+    {
+      "at": "2026-09-07T23:01:50.057Z",
+      "status": "blocked",
+      "detail": "MMK1053 source is recognized, but its verified encrypted login currently requires a Geetest CAPTCHA before a session can be created. No deposit, transfer, or slip confirmation was attempted."
+    },
     {
       "at": "2026-09-07T20:49:17.993Z",
       "status": "blocked",
@@ -146,11 +151,6 @@
     },
     {
       "at": "2026-09-04T09:05:39.889Z",
-      "status": "blocked",
-      "detail": "MMK1053 source is recognized, but its verified encrypted login currently requires a Geetest CAPTCHA before a session can be created. No deposit, transfer, or slip confirmation was attempted."
-    },
-    {
-      "at": "2026-09-04T04:46:03.581Z",
       "status": "blocked",
       "detail": "MMK1053 source is recognized, but its verified encrypted login currently requires a Geetest CAPTCHA before a session can be created. No deposit, transfer, or slip confirmation was attempted."
     }
